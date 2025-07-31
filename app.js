@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(errorMiddleware);
-app.use(arcjetMiddleware);
+// app.use(arcjetMiddleware);
 app.use(express.urlencoded({ extended: false }));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);

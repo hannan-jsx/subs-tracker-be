@@ -1,10 +1,11 @@
-import { serve } from "@upstash/workflow/express.js";
+import { serve } from "@upstash/workflow";
 import Subscription from "../models/subscription.model.js";
 import dayjs from "dayjs";
 
 const REMINDERS = [7, 5, 2, 1];
 export const sendRemider = serve(async (context) => {
-  const { subscriptionId } = context?.requestPayload;
+  const requestPayload = context?.requestPayload || {};
+  const { subscriptionId } = requestPayload;
   const subscription = await fetchSubscription(context, subscriptionId);
 
   if (!subscription || subscription.status !== "active") return;
@@ -12,21 +13,21 @@ export const sendRemider = serve(async (context) => {
   const renewalDate = dayjs(subscription?.renewalDate);
 
   if (renewalDate.isBefore(dayjs())) {
-    console.log("Renwall date is passed" + subscriptionId, "Workflow stopped");
+    console.log("Renewal date is passed" + subscriptionId, "Workflow stopped");
   }
 
   for (const daysBefore of REMINDERS) {
-    const remiderDates = renewalDate.subtract(daysBefore, "day");
-    // if (dayjs().isSame(remiderDates, "day")) {
+    const reminderDates = renewalDate.subtract(daysBefore, "day");
+    // if (dayjs().isSame(reminderDates, "day")) {
     //   console.log(
     //     `sending reminder email to ${subscription.user.email} for subscription ${subscriptionId}`
     //   );
     // }
-    if (remiderDates.isAfter(dayjs())) {
+    if (reminderDates.isAfter(dayjs())) {
       await sleepUntilReminder(
         context,
         `Reminder ${daysBefore} days before`,
-        remiderDates
+        reminderDates
       );
     }
     await triggerReminder(context, `Reminder ${daysBefore} days before`);
